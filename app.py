@@ -1,49 +1,57 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 from sklearn.cluster import KMeans
 
-# 1. SETTING HALAMAN (Layout Wide agar Lega)
+# 1. SETTING HALAMAN
 st.set_page_config(
     page_title="EduAnalytics Pro",
     page_icon="💎",
-    layout="wide",
-    initial_sidebar_state="expanded",
+    layout="wide"
 )
 
-# 2. CSS CUSTOM UNTUK TAMPILAN MEWAH (Glassmorphism & Border Gradient)
+# 2. CSS FIX: Memastikan Teks Terlihat Jelas (Warna Gelap di Kartu Putih)
 st.markdown("""
     <style>
-    /* Mengubah background utama */
+    /* Background utama aplikasi agar tetap bersih */
     .stApp {
-        background-color: #f8f9fa;
+        background-color: #f1f5f9;
     }
     
-    /* Style Kartu Metric */
+    /* Memaksa Kartu Metric agar Teksnya Hitam/Gelap */
     div[data-testid="metric-container"] {
-        background: white;
-        padding: 20px;
-        border-radius: 15px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        border: 1px solid #efefef;
-        transition: transform 0.3s ease;
-    }
-    
-    div[data-testid="metric-container"]:hover {
-        transform: translateY(-5px);
-        border-left: 5px solid #6366f1;
+        background-color: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        padding: 20px !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1) !important;
     }
 
-    /* Mempercantik judul */
-    h1 {
-        color: #1e293b;
+    /* Memaksa Warna Label (Judul Kecil di Metric) */
+    [data-testid="stMetricLabel"] {
+        color: #475569 !important;
+        font-weight: 600 !important;
+    }
+
+    /* Memaksa Warna Value (Angka Besar di Metric) */
+    [data-testid="stMetricValue"] {
+        color: #1e293b !important;
         font-weight: 800 !important;
+    }
+
+    /* Mengatur style Tab agar lebih modern */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 10px;
+    }
+    .stTabs [data-baseweb="tab"] {
+        background-color: #ffffff;
+        border-radius: 8px 8px 0 0;
+        padding: 10px 20px;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# 3. FUNGSI LOAD DATA (KHUSUS EXCEL)
+# 3. FUNGSI LOAD DATA EXCEL
 @st.cache_data
 def load_data():
     try:
@@ -55,93 +63,56 @@ def load_data():
 
 df = load_data()
 
-# --- HEADER & SIDEBAR ---
-with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/3413/3413535.png", width=80)
-    st.title("EduDash Pro")
-    st.markdown("---")
-    st.markdown("### 🛠️ Control Panel")
-    show_raw = st.checkbox("Tampilkan Data Mentah")
-    st.info("Gunakan menu ini untuk memfilter tampilan dashboard utama.")
-
-# --- PROSES DATA ---
+# --- DASHBOARD LOGIC ---
 if df is not None:
-    # Cari kolom soal
+    # Cari kolom soal secara otomatis
     soal_cols = [col for col in df.columns if "soal" in col.lower()]
     df['Skor_Total'] = df[soal_cols].sum(axis=1)
     
-    # Header Utama
     st.title("💎 Student Performance Insight")
-    st.markdown("Dashboard analisis kompetensi siswa berbasis kecerdasan buatan (K-Means Clustering).")
+    st.markdown("Dashboard analisis kompetensi siswa berbasis **Excel**")
     
-    # --- SECTION 1: KPI CARDS ---
+    # --- SECTION 1: KARTU STATISTIK (KPI) ---
     c1, c2, c3, c4 = st.columns(4)
     with c1:
-        st.metric("Total Partisipan", f"{len(df)} Siswa", delta="Active")
+        st.metric("Total Siswa", f"{len(df)}")
     with c2:
-        st.metric("Rata-rata Skor", f"{df['Skor_Total'].mean():.2f}")
+        st.metric("Rata-rata Skor", f"{df['Skor_Total'].mean():.1f}")
     with c3:
-        st.metric("Pencapaian Tertinggi", f"{df['Skor_Total'].max()}")
+        st.metric("Skor Tertinggi", f"{df['Skor_Total'].max()}")
     with c4:
-        st.metric("Standar Deviasi", f"{df['Skor_Total'].std():.2f}")
+        st.metric("Variansi", f"{df['Skor_Total'].std():.1f}")
 
-    st.divider()
+    st.write("") # Spasi
 
-    # --- SECTION 2: TABS VISUALISASI MEWAH ---
-    tab1, tab2, tab3 = st.tabs(["🚀 Performance Analytics", "📊 Detail Soal", "🤖 AI Segmentation"])
+    # --- SECTION 2: VISUALISASI ---
+    tab1, tab2 = st.tabs(["📊 Analisis Performa", "🎯 AI Clustering"])
 
     with tab1:
-        col_a, col_b = st.columns([2, 1])
-        with col_a:
-            st.subheader("Distribusi Performa Keseluruhan")
-            fig_dist = px.histogram(df, x="Skor_Total", nbins=10, 
-                                   color_discrete_sequence=['#6366f1'],
-                                   marginal="violin") # Menambah efek violin agar mewah
-            fig_dist.update_layout(plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)')
-            st.plotly_chart(fig_dist, use_container_width=True)
-        
-        with col_b:
-            st.subheader("🏆 Leaderboard")
-            top_siswa = df[['Skor_Total']].sort_values(by='Skor_Total', ascending=False).head(5)
-            st.table(top_siswa)
-
-    with tab2:
-        st.subheader("Analisis Kesulitan per Item Soal")
+        # Grafik batang dengan tema terang agar teks terbaca
         rata_soal = df[soal_cols].mean().reset_index()
-        rata_soal.columns = ['Item Soal', 'Rata-rata']
+        rata_soal.columns = ['Soal', 'Rata_Rata']
         
-        fig_bar = px.bar(rata_soal, x='Item Soal', y='Rata-rata', 
-                         color='Rata-rata', 
-                         color_continuous_scale='Sunsetdark')
-        fig_bar.update_layout(xaxis_tickangle=-45)
+        fig_bar = px.bar(rata_soal, x='Soal', y='Rata_Rata', 
+                         color='Rata_Rata',
+                         template="plotly_white", # Memaksa background grafik putih
+                         color_continuous_scale='Viridis')
         st.plotly_chart(fig_bar, use_container_width=True)
 
-    with tab3:
-        st.subheader("AI-Driven Student Profiling")
-        # Clustering K-Means
+    with tab2:
+        # K-Means Clustering
         kmeans = KMeans(n_clusters=3, random_state=42, n_init=10)
         df['Cluster'] = kmeans.fit_predict(df[soal_cols])
         
-        # Penamaan Cluster
-        map_nama = {0: "Potential", 1: "Advanced", 2: "Standard"} 
-        df['Status'] = df['Cluster'].map(map_nama)
-
-        c_pie, c_desc = st.columns([1, 1])
-        with c_pie:
-            fig_pie = px.pie(df, names='Status', hole=0.5, 
-                             color_discrete_sequence=px.colors.qualitative.Pastel)
+        col_left, col_right = st.columns(2)
+        with col_left:
+            fig_pie = px.pie(df, names='Cluster', hole=0.5, 
+                             template="plotly_white",
+                             color_discrete_sequence=px.colors.qualitative.Safe)
             st.plotly_chart(fig_pie, use_container_width=True)
-        
-        with c_desc:
-            st.write("#### Insight Strategis")
-            st.success("🟢 **Advanced**: Siswa yang menguasai hampir seluruh materi.")
-            st.warning("🟡 **Standard**: Perlu penguatan pada beberapa topik tertentu.")
-            st.error("🔴 **Potential**: Butuh pendampingan intensif (Remedial).")
-
-    if show_raw:
-        st.subheader("🔍 Spreadsheet View")
-        st.dataframe(df, use_container_width=True)
+        with col_right:
+            st.info("💡 **Tips Membaca:** Cluster menunjukkan kelompok siswa dengan pola jawaban serupa. Gunakan ini untuk menentukan strategi remedial.")
+            st.dataframe(df[['Skor_Total', 'Cluster']].head(10), use_container_width=True)
 
 else:
-    st.error("❌ File 'data.xlsx' tidak ditemukan!")
-    st.info("Pastikan kamu sudah mengupload file bernama 'data.xlsx' (huruf kecil semua) ke GitHub.")
+    st.error("Gagal memuat file 'data.xlsx'. Pastikan file sudah di-upload ke GitHub.")
