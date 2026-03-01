@@ -112,7 +112,7 @@ if df is not None:
 
         with t2:
             st.subheader("🤖 Segmentasi Kemampuan Siswa")
-            col_a, col_b = st.columns()
+            col_a, col_b = st.columns(b)
             with col_a:
                 fig_pie = px.pie(df, names='Kategori', hole=0.5, color_discrete_map={"Sangat Baik":"#00DBDE", "Potensial":"#FC00FF", "Perlu Perhatian":"#FF4B4B"})
                 st.plotly_chart(fig_pie, use_container_width=True)
@@ -153,3 +153,4 @@ if df is not None:
             st.plotly_chart(px.line(x=soal_cols, y=y_vals, markers=True), use_container_width=True)
 else:
     st.error("❌ Data tidak ditemukan! Pastikan file CSV/Excel ada di folder yang sama.")
+
