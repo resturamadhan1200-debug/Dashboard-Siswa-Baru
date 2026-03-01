@@ -1,4 +1,4 @@
-dalam koding ini saya mau menambahkan korelasi segmentasi dan regresinya
+
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -172,3 +172,4 @@ if df is not None:
 
 else:
     st.error("❌ File 'data.xlsx' tidak terdeteksi di GitHub!")
+
