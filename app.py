@@ -6,7 +6,7 @@ from sklearn.cluster import KMeans
 
 # 1. KONFIGURASI HALAMAN
 st.set_page_config(
-    page_title="EduAnalytics Pro | M Restu",
+    page_title="EduAnalytics Pro",
     page_icon="💎",
     layout="wide"
 )
@@ -171,3 +171,4 @@ if df is not None:
 
 else:
     st.error("❌ File 'data.xlsx' tidak terdeteksi di GitHub!")
+
